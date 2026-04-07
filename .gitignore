@@ -29,6 +29,11 @@ build/
 .gradle
 local.properties
 keystore.properties
+<<<<<<< HEAD
+=======
+.claude/settings.local.json
+android/keystore.jks
+>>>>>>> ca60fc6 (update gitignore)
 *.iml
 *.hprof
 .cxx/
