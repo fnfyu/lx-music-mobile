@@ -1,5 +1,5 @@
 import TrackPlayer from 'react-native-track-player'
-import { updateOptions, setVolume, setPlaybackRate, migratePlayerCache } from './utils'
+import { updateOptions, setVolume, setPlaybackRate, setPitch, setEqualizerEnabled, setEqualizerBandLevel, migratePlayerCache } from './utils'
 
 // const listenEvent = () => {
 //   TrackPlayer.addEventListener('playback-error', err => {
@@ -16,12 +16,15 @@ import { updateOptions, setVolume, setPlaybackRate, migratePlayerCache } from '.
 //   })
 // }
 
-const initial = async({ volume, playRate, cacheSize, isHandleAudioFocus, isEnableAudioOffload }: {
+const initial = async({ volume, playRate, isPlaybackRateChangePitch, cacheSize, isHandleAudioFocus, isEnableAudioOffload, isEqualizerEnabled, equalizerBands }: {
   volume: number
   playRate: number
+  isPlaybackRateChangePitch: boolean
   cacheSize: number
   isHandleAudioFocus: boolean
   isEnableAudioOffload: boolean
+  isEqualizerEnabled: boolean
+  equalizerBands: number[]
 }) => {
   if (global.lx.playerStatus.isIniting || global.lx.playerStatus.isInitialized) return
   global.lx.playerStatus.isIniting = true
@@ -40,6 +43,15 @@ const initial = async({ volume, playRate, cacheSize, isHandleAudioFocus, isEnabl
   await updateOptions()
   await setVolume(volume)
   await setPlaybackRate(playRate)
+  if (!isPlaybackRateChangePitch) {
+    await setPitch(1 / playRate)
+  }
+  if (isEqualizerEnabled) {
+    await setEqualizerEnabled(true)
+    for (let i = 0; i < equalizerBands.length; i++) {
+      await setEqualizerBandLevel(i, equalizerBands[i] * 100)
+    }
+  }
   // listenEvent()
 }
 
@@ -52,6 +64,9 @@ export {
   isInitialized,
   setVolume,
   setPlaybackRate,
+  setPitch,
+  setEqualizerEnabled,
+  setEqualizerBandLevel,
 }
 
 export {

@@ -142,6 +142,21 @@ declare global {
       'player.playbackRate': number
 
       /**
+       * 调速时是否同步改变音调
+       */
+      'player.isPlaybackRateChangePitch': boolean
+
+      /**
+       * 均衡器是否启用
+       */
+      'player.isEqualizerEnabled': boolean
+
+      /**
+       * 均衡器各频段增益（毫贝），5个频段
+       */
+      'player.equalizerBands': number[]
+
+      /**
        * 缓存大小设置 unit MB
        */
       'player.cacheSize': string

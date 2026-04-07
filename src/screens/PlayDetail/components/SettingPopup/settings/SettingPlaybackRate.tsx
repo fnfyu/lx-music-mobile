@@ -8,11 +8,12 @@ import Slider, { type SliderProps } from '@/components/common/Slider'
 import { updateSetting } from '@/core/common'
 import { useI18n } from '@/lang'
 import styles from './style'
-import { setPlaybackRate, updateMetaData } from '@/plugins/player'
+import { setPlaybackRate, setPitch, updateMetaData } from '@/plugins/player'
 import { setPlaybackRate as setLyricPlaybackRate } from '@/core/lyric'
 import ButtonPrimary from '@/components/common/ButtonPrimary'
 import playerState from '@/store/player/state'
 import settingState from '@/store/setting/state'
+import CheckBox from '@/components/common/CheckBox'
 
 const MIN_VALUE = 60
 const MAX_VALUE = 200
@@ -20,6 +21,7 @@ const MAX_VALUE = 200
 export default () => {
   const theme = useTheme()
   const playbackRate = Math.trunc(useSettingValue('player.playbackRate') * 100)
+  const isChangePitch = useSettingValue('player.isPlaybackRateChangePitch')
   const [sliderSize, setSliderSize] = useState(playbackRate)
   const [isSliding, setSliding] = useState(false)
   const t = useI18n()
@@ -30,7 +32,11 @@ export default () => {
   const handleValueChange: SliderProps['onValueChange'] = value => {
     value = Math.trunc(value)
     setSliderSize(value)
-    void setPlaybackRate(parseFloat((value / 100).toFixed(2)))
+    const rate = parseFloat((value / 100).toFixed(2))
+    void setPlaybackRate(rate)
+    if (!settingState.setting['player.isPlaybackRateChangePitch']) {
+      void setPitch(1 / rate)
+    }
   }
   const handleSlidingComplete: SliderProps['onSlidingComplete'] = value => {
     setSliding(false)
@@ -45,10 +51,16 @@ export default () => {
     if (settingState.setting['player.playbackRate'] == 1) return
     setSliderSize(100)
     void setPlaybackRate(1).then(() => {
+      void setPitch(1)
       void updateMetaData(playerState.musicInfo, playerState.isPlay, playerState.lastLyric, true) // 更新通知栏的播放速率
       void setLyricPlaybackRate(1)
     })
     updateSetting({ 'player.playbackRate': 1 })
+  }
+  const handleChangePitch = (checked: boolean) => {
+    updateSetting({ 'player.isPlaybackRateChangePitch': checked })
+    const rate = settingState.setting['player.playbackRate']
+    void setPitch(checked ? 1 : 1 / rate)
   }
 
   return (
@@ -66,6 +78,7 @@ export default () => {
           value={playbackRate}
         />
       </View>
+      <CheckBox check={isChangePitch} label={t('play_detail_setting_playback_rate_change_pitch')} onChange={handleChangePitch} />
       <ButtonPrimary onPress={handleReset}>{t('play_detail_setting_playback_rate_reset')}</ButtonPrimary>
     </View>
   )
